@@ -7,4 +7,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::fallback(function () {
+    return view('not-found');
+});
+
 Route::resource('products', ProductController::class);

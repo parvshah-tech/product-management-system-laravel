@@ -22,14 +22,23 @@
         <div class="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col justify-between">
             <div>
                 <nav class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-indigo-600 mb-6">
-                    <span>{{ $product->category->name ?? $product->category }}</span>
+                    <span>{{ $product->category }}</span>
                     <span class="text-gray-300">/</span>
-                    <span class="text-gray-500">{{ $product->subcategory->name ?? $product->subcategory }}</span>
+                    <span class="text-gray-500">{{ $product->subcategory }}</span>
                 </nav>
 
-                <h1 class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white mb-4">
-                    {{ $product->name }}
-                </h1>
+                <div class="flex flex-col gap-1 mb-4">
+                    <h1 class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white leading-tight">
+                        {{ $product->name }}
+                    </h1>
+                    <!-- Sub-header SKU -->
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                            Item #{{ $product->sku }}
+                        </span>
+                    </div>
+                </div>
 
                 <div class="flex items-center gap-4 mb-8">
                     <span

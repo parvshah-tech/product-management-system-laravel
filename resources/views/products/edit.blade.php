@@ -24,6 +24,13 @@
                                 </x-slot>
                             </x-form-input>
 
+                            <x-form-input name="short_description" label="Short Description"
+                                placeholder="Enter short description..." :value="$product->short_description">
+                                <x-slot name="error">
+                                    <p class="mt-1 text-[11px] font-medium text-red-600" id="short_description-error"></p>
+                                </x-slot>
+                            </x-form-input>
+
                             <x-form-textarea name="description" label="Product Description" placeholder="Describe..."
                                 rows="4">
                                 {{ $product->description }}
@@ -131,6 +138,7 @@
         let isValid = true;
 
         const name = document.querySelector('input[name="name"]').value.trim();
+        const short_description = document.querySelector('input[name="short_description"]').value.trim();
         const description = document.querySelector('textarea[name="description"]').value.trim();
         const price = document.querySelector('input[name="price"]').value.trim();
         const sale_price = document.querySelector('input[name="sale_price"]').value.trim();
@@ -145,6 +153,17 @@
             isValid = false;
         } else {
             document.getElementById('name-error').textContent = '';
+        }
+
+        if (short_description === '') {
+            document.getElementById('short_description-error').textContent = 'Short description is required.';
+            isValid = false;
+        } else if (short_description.length < 5 || short_description.length > 255) {
+            document.getElementById('short_description-error').textContent =
+                'Short description must be between 5 and 255 characters long.';
+            isValid = false;
+        } else {
+            document.getElementById('short_description-error').textContent = '';
         }
 
         if (description === '') {
@@ -173,6 +192,9 @@
             isValid = false;
         } else if (isNaN(sale_price) || parseFloat(sale_price) <= 0) {
             document.getElementById('sale_price-error').textContent = 'Sale price must be a positive number.';
+            isValid = false;
+        } else if (parseFloat(sale_price) > parseFloat(price)) {
+            document.getElementById('sale_price-error').textContent = 'Sale price must be less than the regular price.';
             isValid = false;
         } else {
             document.getElementById('sale_price-error').textContent = '';

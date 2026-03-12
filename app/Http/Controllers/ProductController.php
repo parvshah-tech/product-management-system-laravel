@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -26,6 +27,19 @@ class ProductController extends Controller
         return view('products.create');
     }
 
+    private function generateSku($category, $subcategory)
+    {
+        $cat = strtoupper(substr($category, 0, 3));
+        $sub = strtoupper(substr($subcategory, 0, 3));
+        $lastProduct = Product::latest()->first();
+
+        $number = $lastProduct ? $lastProduct->id + 1 : 1;
+
+        $random = strtoupper(substr(md5(uniqid()), 0, 6));
+
+        return $cat.'-'.$sub.'-'.$random.$number;
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -33,6 +47,7 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'short_description' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric',
             'sale_price' => 'nullable|numeric',
@@ -47,8 +62,6 @@ class ProductController extends Controller
 
         if ($request->hasFile('gallery_image')) {
             $galleryImagePath = $request->file('gallery_image')->store('products/gallery', 'public');
-        } else {
-            $galleryImagePath = null;
         }
 
         if ($request->hasFile('feature_images')) {
@@ -58,7 +71,9 @@ class ProductController extends Controller
         }
 
         Product::create([
+            'sku' => $this->generateSku($request->category, $request->subcategory),
             'name' => $request->name,
+            'short_description' => $request->short_description,
             'description' => $request->description,
             'price' => $request->price,
             'sale_price' => $request->sale_price,
@@ -94,6 +109,7 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'short_description' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric',
             'sale_price' => 'nullable|numeric',
@@ -119,6 +135,7 @@ class ProductController extends Controller
 
         $product->update([
             'name' => $request->name,
+            'short_description' => $request->short_description,
             'description' => $request->description,
             'price' => $request->price,
             'sale_price' => $request->sale_price,
@@ -136,6 +153,22 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        if ($product->gallery_image && Storage::disk('public')->exists($product->gallery_image)) {
+            Storage::disk('public')->delete($product->gallery_image);
+        }
+
+        if ($product->feature_images) {
+            $featureImages = $product->feature_images;
+
+            if (is_array($featureImages)) {
+                foreach ($featureImages as $featureImage) {
+                    if (Storage::disk('public')->exists($featureImage)) {
+                        Storage::disk('public')->delete($featureImage);
+                    }
+                }
+            }
+        }
+
         $product->delete();
 
         return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
