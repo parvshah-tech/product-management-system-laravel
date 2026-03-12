@@ -113,21 +113,34 @@ class ProductController extends Controller
             'description' => 'required|string',
             'price' => 'required|numeric',
             'sale_price' => 'nullable|numeric',
-            'category' => 'required|string|max:255',
-            'subcategory' => 'required|string|max:255',
             'gallery_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'feature_images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $featureImagePaths = $product->feature_images;
-        $galleryImagePath = $product->gallery_image;
+        $featureImagePaths = $product->feature_images ?? [];
+        $galleryImagePath = $product->gallery_image ?? null;
+
+        if ($request->has('remove_feature_images')) {
+            $toRemove = json_decode($request->remove_feature_images, true);
+
+            $featureImagePaths = array_filter($featureImagePaths, function ($img) use ($toRemove) {
+                return ! in_array($img, $toRemove);
+            });
+
+            foreach ($toRemove as $path) {
+                Storage::disk('public')->delete($path);
+            }
+        }
 
         if ($request->hasFile('gallery_image')) {
+            if ($product->gallery_image && Storage::disk('public')->exists($product->gallery_image)) {
+                Storage::disk('public')->delete($product->gallery_image);
+            }
+
             $galleryImagePath = $request->file('gallery_image')->store('products/gallery', 'public');
         }
 
         if ($request->hasFile('feature_images')) {
-            $featureImagePaths = [];
             foreach ($request->file('feature_images') as $featureImage) {
                 $featureImagePaths[] = $featureImage->store('products/feature', 'public');
             }
@@ -139,8 +152,6 @@ class ProductController extends Controller
             'description' => $request->description,
             'price' => $request->price,
             'sale_price' => $request->sale_price,
-            'category' => $request->category,
-            'subcategory' => $request->subcategory,
             'gallery_image' => $galleryImagePath,
             'feature_images' => $featureImagePaths,
         ]);

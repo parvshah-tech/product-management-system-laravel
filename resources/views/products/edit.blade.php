@@ -53,24 +53,19 @@
                                     </x-slot>
                                 </x-form-input>
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <x-form-input name="category" label="Category" type="text" :value="$product->category">
-                                    <x-slot name="error">
-                                        <p class="mt-1 text-[11px] font-medium text-red-600" id="category-error"></p>
-                                    </x-slot>
-                                </x-form-input>
-
-                                <x-form-input name="subcategory" label="Subcategory" type="text" :value="$product->subcategory">
-                                    <x-slot name="error">
-                                        <p class="mt-1 text-[11px] font-medium text-red-600" id="subcategory-error"></p>
-                                    </x-slot>
-                                </x-form-input>
-                            </div>
                         </div>
 
                         <!-- Right Column: Media Uploads -->
                         <div
                             class="space-y-4 bg-gray-50/50 dark:bg-gray-800/30 p-5 rounded-xl border border-gray-100 dark:border-gray-800">
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <x-form-input name="category" label="Category" type="text" :value="$product->category" readonly
+                                    class="cursor-not-allowed" />
+                                <x-form-input name="subcategory" label="Subcategory" type="text" :value="$product->subcategory"
+                                    readonly class="cursor-not-allowed" />
+                            </div>
+
                             <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Product Media</h3>
 
                             <x-form-input name="gallery_image" label="Main Gallery Image" type="file" accept="image/*">
@@ -95,23 +90,41 @@
                                 </x-slot>
                             </x-form-input>
 
-                            @if ($product->feature_images && $product->feature_images !== [] && $product->feature_images !== null)
+                            @if ($product->feature_images && count($product->feature_images) > 0)
                                 <div class="mt-4">
                                     <p
                                         class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wider">
                                         Current Feature Images:
                                     </p>
+
+                                    <!-- Hidden input to store paths of images to be deleted -->
+                                    <input type="hidden" name="remove_feature_images" id="remove_feature_images"
+                                        value="[]">
+
                                     <div class="grid grid-cols-2 gap-3">
-                                        @foreach ($product->feature_images as $image)
-                                            <div
-                                                class="relative aspect-square overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
+                                        @foreach ($product->feature_images as $index => $image)
+                                            <div id="feat-img-{{ $index }}"
+                                                class="relative aspect-square overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 group">
+
                                                 <img src="{{ asset('storage/' . $image) }}" alt="Feature Image"
-                                                    class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                                                    class="w-full h-full object-cover">
+
+                                                <!-- Remove Button Overlay -->
+                                                <button type="button"
+                                                    onclick="markForRemoval('{{ $image }}', 'feat-img-{{ $index }}')"
+                                                    class="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
                                             </div>
                                         @endforeach
                                     </div>
                                 </div>
                             @endif
+
 
                         </div>
                     </div>
@@ -142,8 +155,6 @@
         const description = document.querySelector('textarea[name="description"]').value.trim();
         const price = document.querySelector('input[name="price"]').value.trim();
         const sale_price = document.querySelector('input[name="sale_price"]').value.trim();
-        const category = document.querySelector('input[name="category"]').value.trim();
-        const subcategory = document.querySelector('input[name="subcategory"]').value.trim();
 
         if (name === '') {
             document.getElementById('name-error').textContent = 'Name is required.';
@@ -200,20 +211,20 @@
             document.getElementById('sale_price-error').textContent = '';
         }
 
-        if (category === '') {
-            document.getElementById('category-error').textContent = 'Category is required.';
-            isValid = false;
-        } else {
-            document.getElementById('category-error').textContent = '';
-        }
-
-        if (subcategory === '') {
-            document.getElementById('subcategory-error').textContent = 'Subcategory is required.';
-            isValid = false;
-        } else {
-            document.getElementById('subcategory-error').textContent = '';
-        }
-
         return isValid;
+    }
+    let removedImages = [];
+
+    function markForRemoval(imagePath, elementId) {
+        if (confirm('Remove this image?')) {
+            // Hide the element from UI
+            document.getElementById(elementId).remove();
+
+            // Add to removal array
+            removedImages.push(imagePath);
+
+            // Update hidden input
+            document.getElementById('remove_feature_images').value = JSON.stringify(removedImages);
+        }
     }
 </script>
