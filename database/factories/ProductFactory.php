@@ -29,6 +29,15 @@ class ProductFactory extends Factory
         $categories = Category::whereNotNull('parent_id')->pluck('id')->toArray();
         $price = fake()->randomFloat(2, 100, 100000);
 
+        $galleryImages = [
+            'products/default/default.jpg',
+            'products/default/img1.jpg',
+            'products/default/img2.jpg',
+            'products/default/img3.jpg',
+            'products/default/img4.jpg',
+            'products/default/img5.jpg',
+        ];
+
         return [
             'sku' => $sku,
             'name' => fake()->words(2, true),
@@ -37,8 +46,11 @@ class ProductFactory extends Factory
             'price' => $price,
             'sale_price' => fake()->randomFloat(2, 50, $price),
             'category_id' => fake()->randomElement($categories),
-            'gallery_image' => null,
-            'feature_images' => null,
+            'gallery_image' => fake()->randomElement($galleryImages),
+            'feature_images' => [
+                fake()->randomElement($galleryImages),
+                fake()->randomElement($galleryImages),
+            ],
         ];
     }
 }
