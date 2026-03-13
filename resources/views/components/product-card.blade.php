@@ -36,11 +36,12 @@
         <!-- Category & Sub -->
         <div class="flex items-center gap-2 mb-2">
             <span class="text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-                {{ $product->category->name ?? $product->category }}
+                {{ $product->category->parent->name ?? $product->category->name }}
             </span>
             <span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700"></span>
-            <span
-                class="text-[10px] text-gray-500 font-medium italic">{{ $product->subcategory->name ?? $product->subcategory }}</span>
+            <span class="text-[10px] text-gray-500 font-medium italic">
+                {{ $product->category->name ?? 'Uncategorized' }}
+            </span>
         </div>
 
         <!-- Title -->

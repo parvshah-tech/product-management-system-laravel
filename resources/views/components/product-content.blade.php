@@ -22,9 +22,9 @@
                 <div>
                     <nav
                         class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-indigo-600 mb-6">
-                        <span>{{ $product->category }}</span>
+                        <span>{{ $product->category->parent->name ?? $product->category->name }}</span>
                         <span class="text-gray-300">/</span>
-                        <span class="text-gray-500">{{ $product->subcategory }}</span>
+                        <span class="text-gray-500">{{ $product->category->name }}</span>
                     </nav>
 
                     <div class="flex flex-col gap-1 mb-4">

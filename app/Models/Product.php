@@ -16,8 +16,7 @@ class Product extends Model
         'description',
         'price',
         'sale_price',
-        'category',
-        'subcategory',
+        'category_id',
         'gallery_image',
         'feature_images',
     ];
@@ -28,5 +27,10 @@ class Product extends Model
         return [
             'feature_images' => 'array',
         ];
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 }

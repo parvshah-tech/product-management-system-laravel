@@ -12,3 +12,5 @@ Route::fallback(function () {
 });
 
 Route::resource('products', ProductController::class);
+
+Route::get('/subcategories/{id}', [ProductController::class, 'getSubcategories']);

@@ -17,8 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('short_description');
             $table->text('description');
-            $table->string('category');
-            $table->string('subcategory');
+            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
             $table->decimal('price', 8, 2);
             $table->decimal('sale_price', 8, 2);
             $table->string('gallery_image')->nullable();
