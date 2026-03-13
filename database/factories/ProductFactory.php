@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,29 +18,25 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
-        $categories = [
-            'Electronics',
-            'Clothing',
-            'Furniture',
-            'Books',
-        ];
+        $lastProduct = Product::latest()->first();
 
-        $subcategories = [
-            'Mobile',
-            'Laptop',
-            'T-Shirt',
-            'Chair',
-            'Table',
-            'Novel',
-        ];
+        $number = $lastProduct ? $lastProduct->id + 1 : 1;
+
+        $random = strtoupper(substr(md5(uniqid()), 0, 6));
+
+        $sku = 'PROD-'.$random.$number;
+
+        $categories = Category::whereNotNull('parent_id')->pluck('id')->toArray();
+        $price = fake()->randomFloat(2, 100, 100000);
 
         return [
+            'sku' => $sku,
             'name' => fake()->words(2, true),
+            'short_description' => fake()->sentence(),
             'description' => fake()->paragraph(),
-            'category' => fake()->randomElement($categories),
-            'subcategory' => fake()->randomElement($subcategories),
-            'price' => fake()->randomFloat(2, 100, 100000),
-            'sale_price' => fake()->randomFloat(2, 50, 99999),
+            'price' => $price,
+            'sale_price' => fake()->randomFloat(2, 50, $price),
+            'category_id' => fake()->randomElement($categories),
             'gallery_image' => null,
             'feature_images' => null,
         ];
