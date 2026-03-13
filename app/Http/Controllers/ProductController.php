@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -19,25 +20,32 @@ class ProductController extends Controller
         return view('products.index', compact('products', 'total'));
     }
 
+    public function getSubcategories($id)
+    {
+        $subcategories = Category::where('parent_id', $id)->get();
+
+        return response()->json($subcategories);
+    }
+
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        return view('products.create');
+        $categories = Category::where('parent_id', null)->get();
+
+        return view('products.create', compact('categories'));
     }
 
-    private function generateSku($category, $subcategory)
+    private function generateSku()
     {
-        $cat = strtoupper(substr($category, 0, 3));
-        $sub = strtoupper(substr($subcategory, 0, 3));
         $lastProduct = Product::latest()->first();
 
         $number = $lastProduct ? $lastProduct->id + 1 : 1;
 
         $random = strtoupper(substr(md5(uniqid()), 0, 6));
 
-        return $cat.'-'.$sub.'-'.$random.$number;
+        return 'PROD-'.$random.$number;
     }
 
     /**
@@ -50,9 +58,8 @@ class ProductController extends Controller
             'short_description' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric',
-            'sale_price' => 'nullable|numeric',
-            'category' => 'required|string|max:255',
-            'subcategory' => 'required|string|max:255',
+            'sale_price' => 'required|numeric',
+            'category_id' => 'required|exists:categories,id',
             'gallery_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'feature_images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
@@ -71,14 +78,13 @@ class ProductController extends Controller
         }
 
         Product::create([
-            'sku' => $this->generateSku($request->category, $request->subcategory),
+            'sku' => $this->generateSku(),
             'name' => $request->name,
             'short_description' => $request->short_description,
             'description' => $request->description,
             'price' => $request->price,
             'sale_price' => $request->sale_price,
-            'category' => $request->category,
-            'subcategory' => $request->subcategory,
+            'category_id' => $request->category_id,
             'gallery_image' => $galleryImagePath,
             'feature_images' => $featureImagePaths,
         ]);
@@ -99,7 +105,9 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        return view('products.edit', compact('product'));
+        $categories = Category::where('parent_id', null)->get();
+
+        return view('products.edit', compact('product', 'categories'));
     }
 
     /**
@@ -112,7 +120,8 @@ class ProductController extends Controller
             'short_description' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric',
-            'sale_price' => 'nullable|numeric',
+            'sale_price' => 'required|numeric',
+            'category_id' => 'required|exists:categories,id',
             'gallery_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'feature_images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
@@ -152,6 +161,7 @@ class ProductController extends Controller
             'description' => $request->description,
             'price' => $request->price,
             'sale_price' => $request->sale_price,
+            'category_id' => $request->category_id,
             'gallery_image' => $galleryImagePath,
             'feature_images' => $featureImagePaths,
         ]);

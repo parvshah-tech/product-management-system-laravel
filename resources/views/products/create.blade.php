@@ -56,33 +56,30 @@
                             class="space-y-4 bg-gray-50/50 dark:bg-gray-800/30 p-5 rounded-xl border border-gray-100 dark:border-gray-800">
 
                             <div class="grid grid-cols-2 gap-4">
-                                <x-form-input name="category" label="Category" type="text">
+                                <x-form-select name="category" label="Category">
+                                    <option value="">Select Category</option>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                    @endforeach
                                     <x-slot name="error">
                                         <p class="mt-1 text-[11px] font-medium text-red-600" id="category-error"></p>
                                     </x-slot>
-                                </x-form-input>
+                                </x-form-select>
 
-                                <x-form-input name="subcategory" label="Subcategory" type="text">
+                                <x-form-select name="category_id" label="Subcategory">
+                                    <option value="">Select Subcategory</option>
                                     <x-slot name="error">
-                                        <p class="mt-1 text-[11px] font-medium text-red-600" id="subcategory-error"></p>
+                                        <p class="mt-1 text-[11px] font-medium text-red-600" id="category_id-error"></p>
                                     </x-slot>
-                                </x-form-input>
+                                </x-form-select>
                             </div>
 
-                            <h3 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Product Media</h3>
-
-                            <x-form-input name="gallery_image" label="Main Gallery Image" type="file" accept="image/*">
-                                <x-slot name="error">
-                                    <p class="mt-1 text-[11px] font-medium text-red-600" id="gallery_image-error"></p>
-                                </x-slot>
-                            </x-form-input>
-
-                            <x-form-input name="feature_images[]" label="Additional Features" type="file"
-                                accept="image/*" multiple>
-                                <x-slot name="error">
-                                    <p class="mt-1 text-[11px] font-medium text-red-600" id="feature_images-error"></p>
-                                </x-slot>
-                            </x-form-input>
+                            <div class="pt-4">
+                                <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">Media Assets
+                                </h3>
+                                <x-form-file name="gallery_image" label="Main Image" accept="image/*" />
+                                <x-form-file name="feature_images[]" label="Feature Gallery" multiple accept="image/*" />
+                            </div>
                         </div>
                     </div>
 
@@ -112,8 +109,8 @@
         const description = document.querySelector('textarea[name="description"]').value.trim();
         const price = document.querySelector('input[name="price"]').value.trim();
         const sale_price = document.querySelector('input[name="sale_price"]').value.trim();
-        const category = document.querySelector('input[name="category"]').value.trim();
-        const subcategory = document.querySelector('input[name="subcategory"]').value.trim();
+        const category = document.getElementById('category').value.trim();
+        const subcategory = document.getElementById('category_id').value.trim();
 
         if (name === '') {
             document.getElementById('name-error').textContent = 'Name is required.';
@@ -178,12 +175,48 @@
         }
 
         if (subcategory === '') {
-            document.getElementById('subcategory-error').textContent = 'Subcategory is required.';
+            document.getElementById('category_id-error').textContent = 'Subcategory is required.';
             isValid = false;
         } else {
-            document.getElementById('subcategory-error').textContent = '';
+            document.getElementById('category_id-error').textContent = '';
         }
 
         return isValid;
     }
+    document.addEventListener('DOMContentLoaded', function() {
+        const categoryElement = document.getElementById('category');
+
+        if (categoryElement) {
+            categoryElement.addEventListener('change', function() {
+                let category_id = this.value;
+
+                if (category_id && category_id !== '') {
+                    fetch(`/subcategories/${category_id}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            let sub = document.getElementById('category_id');
+
+                            sub.innerHTML = `
+                            <option value="">Select Subcategory</option>
+                            <x-slot name="error">
+                                <p class="mt-1 text-[11px] font-medium text-red-600" id="category_id-error"></p>
+                            </x-slot>
+                            `;
+
+                            data.forEach(function(item) {
+
+                                sub.innerHTML +=
+                                    `<option value="${item.id}">${item.name}</option>`;
+
+                            });
+                        })
+                        .catch(error => console.error('Error fetching subcategories:', error));
+                } else {
+                    let sub = document.getElementById('category_id');
+
+                    sub.innerHTML = '<option value="">Select Subcategory</option>';
+                }
+            });
+        }
+    });
 </script>
