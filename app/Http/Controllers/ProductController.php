@@ -14,10 +14,30 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::latest()->paginate(12);
+        $limit = 12;
+        $products = Product::latest()->limit($limit)->offset(0)->get();
         $total = Product::count();
+        $totalPages = ceil($total / $limit);
+        $currentPage = 1;
 
-        return view('products.index', compact('products', 'total'));
+        return view('products.index', compact('products', 'total', 'limit', 'totalPages', 'currentPage'));
+    }
+
+    public function paginate($pn = 1)
+    {
+        $offset = ($pn - 1) * 12;
+        $limit = 12;
+
+        $products = Product::latest()->limit($limit)->offset($offset)->get();
+
+        $data = [
+            'products' => $products,
+            'limit' => $limit,
+            'offset' => $offset,
+            'page' => $pn,
+        ];
+
+        return response()->json($data);
     }
 
     public function getSubcategories($id)

@@ -13,6 +13,7 @@ Route::fallback(function () {
 });
 
 Route::resource('products', ProductController::class);
+Route::get('/products/paginate/{pn}', [ProductController::class, 'paginate']);
 
 Route::get('/subcategories/{id}', [ProductController::class, 'getSubcategories']);
 
